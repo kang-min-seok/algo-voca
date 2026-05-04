@@ -1,75 +1,104 @@
-# React + TypeScript + Vite
+# AlgoVoca 
+> 알고리즘 및 실습 프로젝트
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+개발자를 위한 개인 맞춤형 영단어 학습 서비스.
 
-Currently, two official plugins are available:
+단순한 단어 암기가 아닌, 내가 속한 직군의 공식 문서를 더 잘 읽기 위한 영단어를 추천받고 학습할 수 있습니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 아이디어
 
-## React Compiler
+영어 공식 문서를 읽을 때의 어려움은 단순히 "모르는 단어가 많아서"가 아닙니다.
+React 문서에서 자주 등장하는 단어와 Kubernetes 문서에서 자주 등장하는 단어는 다릅니다.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+AlgoVoca는 이 점에 착안합니다.
 
-Note: This will impact Vite dev & build performances.
+- **프론트엔드 개발자**라면 `hydration`, `reconciliation`, `idempotent` 같은 단어를 먼저 알아야 합니다.
+- **백엔드 개발자**라면 `idempotency`, `throughput`, `eventual consistency`가 더 급합니다.
+- **DevOps 엔지니어**라면 `orchestration`, `ephemeral`, `declarative`가 핵심입니다.
 
-## Expanding the ESLint configuration
+회원가입 시 직군을 선택하면, 그 직군의 공식 문서에서 빈출하는 단어를 우선적으로 추천해 줍니다.
+여기에 개인의 학습 이력(어떤 단어를 자꾸 틀리는지)을 결합해 추천 순서를 동적으로 조정합니다.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 추천 알고리즘
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+단어 추천은 세 가지 요소의 가중합으로 결정됩니다.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+추천 점수 = w1 × 직군 연관도 + w2 × 단어 중요도 + w3 × 복습 긴급도
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| 요소 | 설명 | 기술 |
+|------|------|------|
+| **직군 연관도** | 내 직군과 이 단어가 얼마나 관련 있는가 | Vector DB + 코사인 유사도 |
+| **단어 중요도** | 직군 필수 단어 중 얼마나 중요한가 | 직군별 사전 정의 점수 |
+| **복습 긴급도** | 지금 이 단어를 복습해야 할 시점인가 | SM-2 (SuperMemo-2) 알고리즘 |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+가중치 `w1`, `w2`, `w3`는 실험을 통해 최적값을 탐색하는 것이 이 프로젝트의 핵심 연구 목표입니다.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 추천 엔진 구조 (2단계 필터링)
+
+전체 단어 DB를 매번 전수 탐색하는 대신, 2단계로 나눠 효율적으로 추출합니다.
+
+```
+[전체 단어 DB]
+      ↓ 1단계: 근사 최근접 이웃(ANN)으로 직군 유사 후보 50개 추출
+[후보 50개]
+      ↓ 2단계: 추천 점수 계산 후 상위 10개 선택
+[오늘의 학습 단어 10개]
+```
+
+### SM-2 알고리즘
+
+에빙하우스 망각 곡선에 기반한 복습 주기 최적화 알고리즘입니다.
+"알고있음" / "모름" 응답을 기록하고, 다음 복습 시점을 과학적으로 결정합니다.
+
+- 틀린 단어 → 짧은 주기로 재등장
+- 맞힌 단어 → 점점 더 긴 간격으로 복습
+
+## 학습 흐름
+
+```
+회원가입 (직군 선택)
+      ↓
+오늘의 단어 10개 추천
+      ↓
+플래시카드 학습
+  앞면: 영단어
+  뒷면: 한국어 뜻 + 공식 문서 예문
+  선택: 알고있음 / 모름
+      ↓
+학습 결과 저장 → SM-2로 다음 복습 일정 갱신
+```
+
+## 기술 스택
+
+| 영역 | 기술 |
+|------|------|
+| Frontend | React 19 + TypeScript + Vite |
+| 배포 | Cloudflare Pages |
+| Backend | Firebase Functions (Serverless) |
+| Database | Firebase Firestore |
+| 알고리즘 | Vector DB, 코사인 유사도, SM-2, ANN |
+
+## 단어 데이터
+
+직군별 주요 공식 문서(MDN, React Docs, Kubernetes Docs 등)를 크롤링하여
+실제 공식 문서에서 빈출하는 기술 영단어를 데이터셋으로 구성합니다.
+각 단어에는 한국어 뜻, 공식 문서 예문, 직군별 중요도, 의미 벡터가 포함됩니다.
+
+## 프로젝트 구조
+
+```
+src/
+├── components/         # 재사용 UI 컴포넌트
+├── constants/          # 상수 정의
+├── features/           # 기능 단위 모듈 (auth, flashcard, recommendation)
+├── hooks/              # 공통 커스텀 훅
+├── services/           # Firebase API 호출
+├── types/              # TypeScript 타입 정의
+└── utils/              # 순수 유틸리티 함수
+
+docs/
+├── plan/               # Phase별 개발 계획서
+└── rules/              # 코드 규칙 문서
 ```
