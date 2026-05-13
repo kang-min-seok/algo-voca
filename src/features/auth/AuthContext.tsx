@@ -7,6 +7,7 @@ export interface AuthContextType {
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, jobRole: JobRole) => Promise<void>
+  loginWithGithub: () => Promise<{ isNewUser: boolean }>
   logout: () => Promise<void>
 }
 

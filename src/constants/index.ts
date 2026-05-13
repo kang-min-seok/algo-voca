@@ -18,4 +18,7 @@ export const FIREBASE_AUTH_ERRORS: Record<string, string> = {
   'auth/wrong-password': '이메일 또는 비밀번호가 틀렸습니다.',
   'auth/invalid-credential': '이메일 또는 비밀번호가 틀렸습니다.',
   'auth/too-many-requests': '잠시 후 다시 시도해주세요.',
+  'auth/popup-closed-by-user': '로그인이 취소되었습니다.',
+  'auth/cancelled-popup-request': '로그인이 취소되었습니다.',
+  'auth/account-exists-with-different-credential': '이미 다른 방법으로 가입된 이메일입니다.',
 }

@@ -4,6 +4,9 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  GithubAuthProvider,
+  signInWithPopup,
+  getAdditionalUserInfo,
   type User,
 } from 'firebase/auth'
 import { doc, setDoc } from 'firebase/firestore'
@@ -35,12 +38,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     })
   }
 
+  const loginWithGithub = async (): Promise<{ isNewUser: boolean }> => {
+    const provider = new GithubAuthProvider()
+    const credential = await signInWithPopup(auth, provider)
+    const info = getAdditionalUserInfo(credential)
+    return { isNewUser: info?.isNewUser ?? false }
+  }
+
   const logout = async () => {
     await signOut(auth)
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, loginWithGithub, logout }}>
       {children}
     </AuthContext.Provider>
   )

@@ -7,6 +7,7 @@ import LoginPage from '@/features/auth/LoginPage'
 import SignupPage from '@/features/auth/SignupPage'
 import StudyPage from '@/features/flashcard/StudyPage'
 import ResultPage from '@/features/flashcard/ResultPage'
+import OnboardingPage from '@/features/auth/OnboardingPage'
 
 export default function App() {
   return (
@@ -16,6 +17,14 @@ export default function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <ProtectedRoute>
+                <OnboardingPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/home"
             element={
