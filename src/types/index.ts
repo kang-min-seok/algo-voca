@@ -27,3 +27,20 @@ export interface StudyResult {
   answers: StudyAnswer[]
   words: Word[]
 }
+
+export interface StudySessionAnswer {
+  wordId: WordId
+  quality: 0 | 1
+  term: string
+  definition: string
+}
+
+export interface StudySession {
+  id: string
+  completedAt: Date
+  totalWords: number
+  knownWords: number
+  unknownWords: number
+  percent: number
+  answers: StudySessionAnswer[]
+}

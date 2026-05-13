@@ -1,10 +1,22 @@
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/features/auth/AuthContext'
+import { saveStudySession } from '@/services/studySessionService'
 import type { StudyResult } from '@/types'
 
 export default function ResultPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const state = location.state as StudyResult | null
+  const savedRef = useRef(false)
+  const [saveError, setSaveError] = useState(false)
+
+  useEffect(() => {
+    if (!state || !user || savedRef.current) return
+    savedRef.current = true
+    saveStudySession(user.uid, state.answers, state.words).catch(() => setSaveError(true))
+  }, [state, user])
 
   if (!state) {
     navigate('/home', { replace: true })
@@ -29,6 +41,12 @@ export default function ResultPage() {
         <p className="text-[15px] text-slate-500 dark:text-slate-400 text-center -mt-4">
           오늘의 학습 결과예요
         </p>
+
+        {saveError && (
+          <p className="text-[13px] text-red-500 dark:text-red-400 text-center">
+            학습 기록 저장에 실패했어요. 결과는 유지됩니다.
+          </p>
+        )}
 
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-6 py-8 shadow-sm flex flex-col items-center gap-5">
           <div className="text-[56px] font-extrabold text-violet-600 dark:text-violet-400 leading-none">
