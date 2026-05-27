@@ -9,7 +9,7 @@
 | Phase | 내용 | 상태 |
 |-------|------|------|
 | Phase 1 | 타입 & 데이터 레이어 정비 | ✅ 완료 |
-| Phase 2 | Firebase Functions 구축 | ⬜ 미시작 |
+| Phase 2 | Firebase Functions 구축 | ✅ 완료 |
 | Phase 3 | 프론트엔드 Functions 연동 | ⬜ 미시작 |
 | Phase 4 | 단어 데이터 파이프라인 | ⬜ 미시작 |
 
@@ -21,6 +21,23 @@
 | `AnswerDocument` 타입 추가 | `src/types/index.ts` | ✅ |
 | `sm2Quality` 저장 | `src/services/studySessionService.ts` | ✅ |
 | `recommendedWordIds` 저장 | `src/services/studySessionService.ts` | ✅ |
+
+### Phase 2 세부 항목
+
+| 작업 | 파일 | 상태 |
+|------|------|------|
+| Firebase 프로젝트 설정 | `firebase.json`, `.firebaserc` | ✅ |
+| Functions 초기화 | `functions/package.json`, `functions/tsconfig.json` | ✅ |
+| `calculateSM2()` | `functions/src/algorithms/sm2.ts` | ✅ |
+| `calculateErrorScore()` | `functions/src/algorithms/errorScore.ts` | ✅ |
+| 추천 점수 계산 | `functions/src/algorithms/recommendation.ts` | ✅ |
+| wordRecord + answers CRUD | `functions/src/services/wordRecordService.ts` | ✅ |
+| words 컬렉션 조회 | `functions/src/services/wordService.ts` | ✅ |
+| Pinecone 클라이언트 | `functions/src/services/pineconeService.ts` | ✅ |
+| 직군 임베딩 상수 (플레이스홀더) | `functions/src/constants/roleEmbeddings.ts` | ✅ |
+| `answer` Callable Function | `functions/src/api/answer.ts` | ✅ |
+| `recommend` Callable Function | `functions/src/api/recommend.ts` | ✅ |
+| Functions 진입점 | `functions/src/index.ts` | ✅ |
 
 ---
 
