@@ -30,8 +30,7 @@ export function useStudySession(words: Word[]) {
     setProcessedCount((prev) => prev + 1)
     setQueue((prev) => {
       const [, ...rest] = prev
-      // 틀리면 큐 뒤로 재추가
-      return quality === 0 ? [...rest, currentWord] : rest
+      return rest
     })
   }
 
