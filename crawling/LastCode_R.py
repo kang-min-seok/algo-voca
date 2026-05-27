@@ -2,17 +2,29 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import Counter
+from enum import Enum
 import re
+
+
+class WordSource(str, Enum):
+    DOCKER     = "docker"
+    KUBERNETES = "kubernetes"
+    TERRAFORM  = "terraform"
+    FLUTTER    = "flutter"
+    REACT      = "react"
+    NEXTJS     = "nextjs"
+    TAILWIND   = "tailwind"
+
 
 # 1. 수집 설정
 TARGET_SOURCES = {
-    "DOCKER": {"START_URL": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/", "PATH_GUARD": "/get-started/"},
-    "KUBERNETES": {"START_URL": "https://kubernetes.io/docs/home/", "PATH_GUARD": "/docs/"},
-    "TERRAFORM": {"START_URL": "https://developer.hashicorp.com/terraform/language", "PATH_GUARD": "/terraform/"},
-    "FLUTTER": {"START_URL": "https://docs.flutter.dev/", "PATH_GUARD": "/"},
-    "REACT": {"START_URL": "https://react.dev/learn", "PATH_GUARD": "/learn"},
-    "NEXT_JS": {"START_URL": "https://nextjs.org/docs", "PATH_GUARD": "/docs"},
-    "TAILWIND": {"START_URL": "https://tailwindcss.com/docs", "PATH_GUARD": "/docs"}
+    WordSource.DOCKER:     {"START_URL": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/", "PATH_GUARD": "/get-started/"},
+    WordSource.KUBERNETES: {"START_URL": "https://kubernetes.io/docs/home/", "PATH_GUARD": "/docs/"},
+    WordSource.TERRAFORM:  {"START_URL": "https://developer.hashicorp.com/terraform/language", "PATH_GUARD": "/terraform/"},
+    WordSource.FLUTTER:    {"START_URL": "https://docs.flutter.dev/", "PATH_GUARD": "/"},
+    WordSource.REACT:      {"START_URL": "https://react.dev/learn", "PATH_GUARD": "/learn"},
+    WordSource.NEXTJS:     {"START_URL": "https://nextjs.org/docs", "PATH_GUARD": "/docs"},
+    WordSource.TAILWIND:   {"START_URL": "https://tailwindcss.com/docs", "PATH_GUARD": "/docs"},
 }
 
 MAX_PAGES_PER_TARGET = 50
@@ -229,10 +241,12 @@ def crawl_target(url, start_url, path_guard, page_counter, visited):
         
         text_content = soup.get_text(separator=' ')
         tokens = re.findall(r'\b[a-zA-Z0-9_-]{3,25}\b', text_content)
-        
-        for token in tokens:
+
+        normalized_tokens = [token.replace('-', ' ').replace('_', ' ') for token in tokens]
+
+        for token in normalized_tokens:
             if is_valid_tech_term(token):
-                global_term_counter[token] += 1
+                global_term_counter[token.lower()] += 1
         
         for link in soup.find_all("a", href=True):
             next_url = urljoin(url, link.get("href"))
