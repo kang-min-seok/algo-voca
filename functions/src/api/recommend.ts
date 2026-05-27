@@ -8,7 +8,7 @@ import type { JobRole } from '../types'
 
 const RECOMMEND_COUNT = 10
 
-export const recommend = onCall(async (request) => {
+export const recommend = onCall({ secrets: ['PINECONE_API_KEY'] }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Must be authenticated')
   }

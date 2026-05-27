@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Seed script progress
+scripts/.seed-progress.json
+
 # Python
 .env
 __pycache__/

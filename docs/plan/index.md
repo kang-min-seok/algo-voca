@@ -11,7 +11,7 @@
 | Phase 1 | 타입 & 데이터 레이어 정비 | ✅ 완료 |
 | Phase 2 | Firebase Functions 구축 | ✅ 완료 |
 | Phase 3 | 프론트엔드 Functions 연동 | ✅ 완료 |
-| Phase 4 | 단어 데이터 파이프라인 | ⬜ 미시작 |
+| Phase 4 | 단어 데이터 파이프라인 | ✅ 완료 |
 
 ### Phase 1 세부 항목
 
@@ -396,10 +396,10 @@ PINECONE_INDEX_NAME=algvoca-words
 
 | 항목 | 방법 | 상태 |
 |------|------|------|
-| Pinecone 계정 및 API Key 발급 | [pinecone.io](https://www.pinecone.io) 가입 | ⬜ |
-| **인덱스 생성** | 이름: `algvoca-words` / 차원: `3072` / 메트릭: `cosine` | ⬜ |
-| 단어 벡터 업로드 | `python crawling/embed_to_pinecone.py` | ⬜ |
-| 직군 임베딩 계산 | `python crawling/calc_role_embeddings.py` → `functions/src/constants/roleEmbeddings.ts` 교체 | ⬜ |
+| Pinecone 계정 및 API Key 발급 | [pinecone.io](https://www.pinecone.io) 가입 | ✅ |
+| **인덱스 생성** | 이름: `algvoca-words` / 차원: `3072` / 메트릭: `cosine` | ✅ (seed 스크립트가 자동 생성) |
+| 단어 벡터 업로드 | `pnpm run seed` 2단계 | ✅ |
+| 직군 임베딩 계산 | `python crawling/calc_role_embeddings.py` → `functions/src/constants/roleEmbeddings.ts` 자동 교체 | ⬜ 실행 필요 |
 
 ---
 
@@ -446,3 +446,12 @@ Phase 2가 가장 크고 핵심적인 작업. Phase 4(데이터)는 Phase 2 개�
 | `src/features/flashcard/useStudySession.ts` | Queue 재학습 구현 | 3 |
 | `src/features/flashcard/ResultPage.tsx` | answer Function 호출 추가 | 3 |
 | `crawling/calc_role_embeddings.py` | 직군 임베딩 계산 스크립트 | 4 |
+
+### Phase 4 세부 항목
+
+| 작업 | 파일 | 상태 |
+|------|------|------|
+| Firestore words/ 데이터 업로드 | `scripts/seedWords.ts` (`pnpm run seed`) | ✅ |
+| Pinecone 벡터 업로드 | `scripts/seedWords.ts` (2단계) | ✅ |
+| 직군 임베딩 계산 스크립트 | `crawling/calc_role_embeddings.py` | ✅ |
+| `roleEmbeddings.ts` 실제 벡터 교체 | `python crawling/calc_role_embeddings.py` 실행 후 자동 생성 | ⬜ 스크립트 실행 필요 |
