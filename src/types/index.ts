@@ -49,8 +49,16 @@ export interface WordRecord {
   interval: number        // 복습 간격 일수 (초기값: 0)
   nextReviewDate: Date    // 다음 복습일 (초기값: 오늘)
   lastAnsweredAt: Date
+  errorScore: number      // 0~1, 추천 엔진용 사전계산 오답 점수 (세션 완료 시 갱신)
   totalAnswers: number
   correctAnswers: number
+}
+
+// 단어별 답변 이력 (Firestore: users/{uid}/wordRecords/{wordId}/answers/{answerId})
+export interface AnswerDocument {
+  answeredAt: Date
+  quality: 0 | 1          // 0: 모름, 1: 알고있음
+  sessionId: string
 }
 
 export interface StudyAnswer {

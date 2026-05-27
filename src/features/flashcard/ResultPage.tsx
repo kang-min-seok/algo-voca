@@ -15,7 +15,11 @@ export default function ResultPage() {
   useEffect(() => {
     if (!state || !user || savedRef.current) return
     savedRef.current = true
-    saveStudySession(user.uid, state.answers, state.words).catch(() => setSaveError(true))
+    saveStudySession(user.uid, state.answers, state.words)
+      .then((_sessionId) => {
+        // Phase 2에서 _sessionId를 answer Function에 전달할 예정
+      })
+      .catch(() => setSaveError(true))
   }, [state, user])
 
   if (!state) {

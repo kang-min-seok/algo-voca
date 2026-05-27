@@ -4,6 +4,26 @@
 
 ---
 
+## 진행 상황
+
+| Phase | 내용 | 상태 |
+|-------|------|------|
+| Phase 1 | 타입 & 데이터 레이어 정비 | ✅ 완료 |
+| Phase 2 | Firebase Functions 구축 | ⬜ 미시작 |
+| Phase 3 | 프론트엔드 Functions 연동 | ⬜ 미시작 |
+| Phase 4 | 단어 데이터 파이프라인 | ⬜ 미시작 |
+
+### Phase 1 세부 항목
+
+| 작업 | 파일 | 상태 |
+|------|------|------|
+| `WordRecord.errorScore` 추가 | `src/types/index.ts` | ✅ |
+| `AnswerDocument` 타입 추가 | `src/types/index.ts` | ✅ |
+| `sm2Quality` 저장 | `src/services/studySessionService.ts` | ✅ |
+| `recommendedWordIds` 저장 | `src/services/studySessionService.ts` | ✅ |
+
+---
+
 ## 현재 구현 상태 요약
 
 ### 완료된 것
@@ -77,6 +97,17 @@ interface AnswerDocument {
     sm2Quality: a.quality === 1 ? 4 : 1,  // 누락
   }))
 }
+```
+
+### 커밋 메세지
+
+```
+feat: 타입 및 세션 서비스 정비 (Phase 1)
+
+- WordRecord에 errorScore 필드 추가
+- AnswerDocument 타입 추가 (answers/ 서브컬렉션용)
+- studySessionService: sm2Quality, recommendedWordIds 저장
+- getStudySessions 반환값에 recommendedWordIds 포함
 ```
 
 ---
@@ -169,6 +200,18 @@ const result = await index.query({
 })
 ```
 
+### 커밋 메세지
+
+```
+feat: Firebase Functions 구현 (Phase 2)
+
+- Functions 프로젝트 초기화 (TypeScript)
+- calculateSM2, calculateErrorScore 알고리즘 구현
+- POST /words/answer: SM-2 갱신, 답변 이력 저장, errorScore 재계산
+- GET /words/recommend: Pinecone + Firestore 기반 추천 엔진 구현
+- 직군별 임베딩 벡터 상수 추가
+```
+
 ---
 
 ## Phase 3 — 프론트엔드 Firebase Functions 연동
@@ -215,6 +258,16 @@ const handleAnswer = (quality: 0 | 1) => {
 }
 ```
 
+### 커밋 메세지
+
+```
+feat: 프론트엔드 Firebase Functions 연동 (Phase 3)
+
+- wordService: 목 데이터 제거, GET /words/recommend Functions 호출로 교체
+- ResultPage: 세션 완료 시 POST /words/answer 호출 추가
+- useStudySession: 틀린 단어 Queue 재학습 구현
+```
+
 ---
 
 ## Phase 4 — 단어 데이터 파이프라인
@@ -252,6 +305,17 @@ const handleAnswer = (quality: 0 | 1) => {
 6. 직군별 임베딩 상수 계산
    → calc_role_embeddings.py 실행
    → functions/src/constants/roleEmbeddings.ts 출력
+```
+
+### 커밋 메세지
+
+```
+feat: 단어 데이터 파이프라인 구축 (Phase 4)
+
+- 크롤링 데이터 기반 중요도 계산 스크립트 추가
+- Gemini API 활용 단어 enrichment 파이프라인 구현
+- Firestore words/ 컬렉션 및 Pinecone 인덱스 데이터 업로드
+- 직군별 임베딩 벡터 상수 생성 및 Functions에 반영
 ```
 
 ---
