@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { httpsCallable } from 'firebase/functions'
 import { useAuth } from '@/features/auth/AuthContext'
+import { functions } from '@/services/firebase'
 import { saveStudySession } from '@/services/studySessionService'
 import type { StudyResult } from '@/types'
+
+const answerFn = httpsCallable(functions, 'answer')
 
 export default function ResultPage() {
   const location = useLocation()
@@ -16,9 +20,9 @@ export default function ResultPage() {
     if (!state || !user || savedRef.current) return
     savedRef.current = true
     saveStudySession(user.uid, state.answers, state.words)
-      .then((_sessionId) => {
-        // Phase 2에서 _sessionId를 answer Function에 전달할 예정
-      })
+      .then((sessionId) =>
+        answerFn({ sessionId, answers: state.answers })
+      )
       .catch(() => setSaveError(true))
   }, [state, user])
 

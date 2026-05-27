@@ -17,7 +17,7 @@ export default function StudyPage() {
 
   useEffect(() => {
     if (!user) return
-    getRecommendedWords(user.uid)
+    getRecommendedWords()
       .then(setWords)
       .catch(() => setError('단어를 불러오지 못했습니다.'))
       .finally(() => setLoading(false))

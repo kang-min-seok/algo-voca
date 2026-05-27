@@ -10,7 +10,7 @@
 |-------|------|------|
 | Phase 1 | 타입 & 데이터 레이어 정비 | ✅ 완료 |
 | Phase 2 | Firebase Functions 구축 | ✅ 완료 |
-| Phase 3 | 프론트엔드 Functions 연동 | ⬜ 미시작 |
+| Phase 3 | 프론트엔드 Functions 연동 | ✅ 완료 |
 | Phase 4 | 단어 데이터 파이프라인 | ⬜ 미시작 |
 
 ### Phase 1 세부 항목
@@ -38,6 +38,14 @@
 | `answer` Callable Function | `functions/src/api/answer.ts` | ✅ |
 | `recommend` Callable Function | `functions/src/api/recommend.ts` | ✅ |
 | Functions 진입점 | `functions/src/index.ts` | ✅ |
+
+### Phase 3 세부 항목
+
+| 작업 | 파일 | 상태 |
+|------|------|------|
+| 목 데이터 제거, `recommend` httpsCallable 호출 | `src/services/wordService.ts` | ✅ |
+| 틀린 단어 Queue 재학습 구현 | `src/features/flashcard/useStudySession.ts` | ✅ |
+| 세션 완료 시 `answer` Function 호출 | `src/features/flashcard/ResultPage.tsx` | ✅ |
 
 ---
 
@@ -333,6 +341,75 @@ feat: 단어 데이터 파이프라인 구축 (Phase 4)
 - Gemini API 활용 단어 enrichment 파이프라인 구현
 - Firestore words/ 컬렉션 및 Pinecone 인덱스 데이터 업로드
 - 직군별 임베딩 벡터 상수 생성 및 Functions에 반영
+```
+
+---
+
+## 외부 서비스 설정 가이드
+
+각 Phase 시작 전 해당 항목을 확인. 설정 누락 시 배포 또는 기능이 동작하지 않음.
+
+---
+
+### Firebase 공통 (초기 1회)
+
+| 항목 | 방법 | 상태 |
+|------|------|------|
+| Firebase 프로젝트 생성 | Firebase Console → 프로젝트 추가 → `algo-voca` | ✅ |
+| Authentication 활성화 | Console → Authentication → 이메일/비밀번호 + GitHub 공급자 | ✅ |
+| Firestore 데이터베이스 생성 | Console → Firestore → 데이터베이스 만들기 (프로덕션 모드) | ✅ |
+| Firebase CLI 설치 | `npm install -g firebase-tools` | ⬜ |
+| Firebase 로그인 | `firebase login` | ⬜ |
+
+---
+
+### Phase 2 — Functions 배포 전 필수 설정
+
+| 항목 | 방법 | 상태 |
+|------|------|------|
+| **Pinecone API Key 설정 (배포)** | `firebase functions:secrets:set PINECONE_API_KEY` | ⬜ |
+| Pinecone API Key 설정 (로컬 에뮬레이터) | `functions/.env.local`에 `PINECONE_API_KEY=<키>` 추가 | ⬜ |
+| Functions 배포 | `firebase deploy --only functions` | ⬜ |
+| Firestore 보안 규칙 배포 | `firebase deploy --only firestore:rules` (현재 테스트용 개방 상태) | ⬜ |
+
+> **Pinecone 미설정 시 동작**: 현재 코드는 영벡터 감지 시 Pinecone 쿼리를 건너뜀.  
+> 중요도 + errorScore만으로 추천 동작 — 기능은 정상이나 직군 연관성 미반영.
+
+**`functions/.env.local` 형식** (로컬 개발용, git 제외):
+```
+PINECONE_API_KEY=pc-xxxxxxxxxxxxxxxx
+PINECONE_INDEX_NAME=algvoca-words
+```
+
+---
+
+### Phase 3 — 프론트엔드 연동 시 필요 설정
+
+| 항목 | 방법 | 상태 |
+|------|------|------|
+| Functions 리전 확인 | 기본 `us-central1` — 프론트엔드 `getFunctions(app, 'us-central1')` 과 일치해야 함 | ⬜ |
+| CORS 설정 | `onCall`은 Firebase SDK가 자동 처리 — 별도 설정 불필요 | ✅ |
+
+---
+
+### Phase 4 — Pinecone 인덱스 설정
+
+| 항목 | 방법 | 상태 |
+|------|------|------|
+| Pinecone 계정 및 API Key 발급 | [pinecone.io](https://www.pinecone.io) 가입 | ⬜ |
+| **인덱스 생성** | 이름: `algvoca-words` / 차원: `3072` / 메트릭: `cosine` | ⬜ |
+| 단어 벡터 업로드 | `python crawling/embed_to_pinecone.py` | ⬜ |
+| 직군 임베딩 계산 | `python crawling/calc_role_embeddings.py` → `functions/src/constants/roleEmbeddings.ts` 교체 | ⬜ |
+
+---
+
+### Firestore 보안 규칙
+
+현재 상태는 테스트용으로 개방되어 있음. 배포 전 `docs/design/firestore-schema.md` 섹션 6의 규칙으로 교체 후 배포해야 함.
+
+```bash
+# firestore.rules 파일 생성 후
+firebase deploy --only firestore:rules
 ```
 
 ---
