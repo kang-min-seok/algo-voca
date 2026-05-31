@@ -1,17 +1,222 @@
 @import "tailwindcss";
 
-@layer base {
-  #root {
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-  }
+/* ===== Root variables ===== */
+:root {
+  --brand: #7c3aed;
+  --card-radius: 20px;
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
 
-  h1, h2, h3 {
-    margin: 0;
-  }
+/* ===== Light theme ===== */
+[data-theme="light"] {
+  --page-bg: #ebebef;
+  --bg: #f3f3f6;
+  --surface: #ffffff;
+  --surface-2: #f6f6f9;
+  --surface-3: #eeeef2;
+  --border: #e4e4ea;
+  --border-strong: #d6d6df;
+  --text: #16161c;
+  --text-2: #565662;
+  --text-3: #8d8d99;
+  --brand-fg: #ffffff;
+  --brand-soft: #ede9fe;
+  --brand-tint: #f5f3ff;
+  --brand-ink: #5b21b6;
+  --green: #15924b;
+  --green-soft: #e3f5ea;
+  --amber: #c2770a;
+  --amber-soft: #fbf0db;
+  --red: #d23b46;
+  --red-soft: #fbe6e8;
+  --shadow-color: 230 20% 30%;
+  --dot: rgba(20, 20, 30, 0.05);
+}
 
-  p {
-    margin: 0;
+/* ===== Dark theme ===== */
+[data-theme="dark"] {
+  --page-bg: #08080b;
+  --bg: #0c0c11;
+  --surface: #16161d;
+  --surface-2: #1c1c25;
+  --surface-3: #23232e;
+  --border: #2a2a35;
+  --border-strong: #383846;
+  --text: #ededf2;
+  --text-2: #9d9daa;
+  --text-3: #6a6a78;
+  --brand-fg: #ffffff;
+  --brand-soft: #2e1065;
+  --brand-tint: #1e1035;
+  --brand-ink: #a78bfa;
+  --green: #3ad17e;
+  --green-soft: #14271c;
+  --amber: #e6a23c;
+  --amber-soft: #2a2113;
+  --red: #f06a73;
+  --red-soft: #2c1518;
+  --shadow-color: 250 60% 2%;
+  --dot: rgba(255, 255, 255, 0.045);
+}
+
+/* ===== Base reset ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  background: var(--page-bg, #15151b);
+  color: var(--text);
+  transition: background 0.4s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, textarea {
+  font-family: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--brand) 30%, transparent);
+}
+
+/* ===== Stage (full-page outer shell) ===== */
+#stage {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--page-bg);
+  background-image: radial-gradient(circle at 1px 1px, var(--dot, rgba(255, 255, 255, 0.04)) 1px, transparent 0);
+  background-size: 22px 22px;
+  transition: background-color 0.4s ease;
+}
+
+/* ===== App shell (mobile card) ===== */
+.app {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+@media (min-width: 520px) {
+  #stage {
+    padding: 28px 16px;
+    align-items: flex-start;
   }
+  .app {
+    min-height: calc(100vh - 56px);
+    border-radius: 28px;
+    border: 1px solid var(--border);
+    box-shadow:
+      0 1px 2px hsl(var(--shadow-color) / 0.3),
+      0 24px 60px -20px hsl(var(--shadow-color) / 0.45);
+  }
+}
+
+/* ===== Screen scroll area ===== */
+.screen-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.screen-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.screen-scroll::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+}
+
+/* ===== Animations ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cardExit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.91) translateY(10px); }
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(-12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+.card-exiting {
+  pointer-events: none;
+  animation: cardExit 0.13s ease-in forwards;
+}
+
+.card-entering {
+  animation: cardEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Utility ===== */
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "calt" 0;
 }

@@ -2,98 +2,186 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/features/auth/AuthContext'
 import { getStudySessions } from '@/services/studySessionService'
-import { APP_NAME } from '@/constants'
+import { Logo } from '@/components/ui/Logo'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import type { StudySession } from '@/types'
+import {
+  BsBoxArrowRight,
+  BsLayers,
+  BsChevronDown,
+  BsCheckLg,
+  BsArrowRight,
+  BsLightning,
+} from 'react-icons/bs'
+
+function scoreTone(percent: number) {
+  if (percent >= 80) return { color: 'var(--green)', soft: 'var(--green-soft)', label: '훌륭해요' }
+  if (percent >= 50) return { color: 'var(--amber)', soft: 'var(--amber-soft)', label: '괜찮아요' }
+  return { color: 'var(--red)', soft: 'var(--red-soft)', label: '복습이 필요해요' }
+}
 
 function formatDate(date: Date): string {
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000)
-
   if (diffDays === 0) return '오늘'
   if (diffDays === 1) return '어제'
-
   return `${date.getMonth() + 1}월 ${date.getDate()}일`
 }
 
-function PercentBar({ percent }: { percent: number }) {
-  const color =
-    percent >= 80 ? 'bg-green-500' : percent >= 50 ? 'bg-yellow-400' : 'bg-red-400'
-  return (
-    <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-      <div
-        className={`h-full rounded-full transition-[width] ${color}`}
-        style={{ width: `${percent}%` }}
-      />
-    </div>
-  )
-}
-
 function SessionRow({ session }: { session: StudySession }) {
-  const [expanded, setExpanded] = useState(false)
-  const unknownAnswers = session.answers.filter((a) => a.quality === 0)
+  const [open, setOpen] = useState(false)
+  const tone = scoreTone(session.percent)
+  const reviewWords = session.answers.filter((a) => a.quality === 0)
 
   return (
-    <li className="flex flex-col gap-2">
+    <div
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 16,
+        overflow: 'hidden',
+        boxShadow: '0 1px 2px hsl(var(--shadow-color) / 0.14)',
+      }}
+    >
       <button
-        className="w-full flex items-center justify-between gap-3 py-3 px-4 bg-slate-50 dark:bg-slate-900 rounded-lg text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-        onClick={() => setExpanded((v) => !v)}
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          padding: '14px 16px',
+          background: 'none',
+          border: 'none',
+          textAlign: 'left',
+          cursor: 'pointer',
+        }}
       >
-        <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              {formatDate(session.completedAt)}
-            </span>
-            <span
-              className={`text-sm font-bold shrink-0 ${
-                session.percent >= 80
-                  ? 'text-green-600 dark:text-green-400'
-                  : session.percent >= 50
-                    ? 'text-yellow-600 dark:text-yellow-400'
-                    : 'text-red-600 dark:text-red-400'
-              }`}
+        <span
+          style={{
+            width: 46,
+            height: 46,
+            borderRadius: 12,
+            flexShrink: 0,
+            background: tone.soft,
+            color: tone.color,
+            display: 'grid',
+            placeItems: 'center',
+            fontWeight: 800,
+            fontSize: 14,
+          }}
+        >
+          {session.percent}
+          <span style={{ fontSize: 9, fontWeight: 600 }}>%</span>
+        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div
+            style={{
+              fontSize: 14.5,
+              fontWeight: 700,
+              color: 'var(--text)',
+              marginBottom: 6,
+            }}
+          >
+            {formatDate(session.completedAt)}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                flex: 1,
+                height: 6,
+                background: 'var(--surface-3)',
+                borderRadius: 6,
+                overflow: 'hidden',
+              }}
             >
-              {session.percent}%
+              <div
+                style={{
+                  width: `${session.percent}%`,
+                  height: '100%',
+                  background: tone.color,
+                  borderRadius: 6,
+                }}
+              />
+            </div>
+            <span
+              className="mono"
+              style={{ fontSize: 11.5, color: 'var(--text-3)', whiteSpace: 'nowrap' }}
+            >
+              {session.knownWords}/{session.totalWords}
             </span>
           </div>
-          <PercentBar percent={session.percent} />
-          <span className="text-[12px] text-slate-400 dark:text-slate-500">
-            {session.knownWords}/{session.totalWords}개 정답
-          </span>
         </div>
-        <span className="text-slate-400 dark:text-slate-500 text-xs shrink-0 ml-1">
-          {expanded ? '▲' : '▼'}
+        <span
+          style={{
+            color: 'var(--text-3)',
+            transform: open ? 'rotate(180deg)' : 'none',
+            transition: 'transform 0.25s ease',
+            flexShrink: 0,
+          }}
+        >
+          <BsChevronDown size={16} />
         </span>
       </button>
 
-      {expanded && (
-        <div className="px-4 pb-3 flex flex-col gap-1.5">
-          {session.unknownWords === 0 ? (
-            <p className="text-[13px] text-green-600 dark:text-green-400">
-              모든 단어를 맞혔어요!
-            </p>
-          ) : (
-            <>
-              <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-1">
-                복습 필요 단어
-              </p>
-              {unknownAnswers.map((a) => (
+      {open && (
+        <div className="fade-in" style={{ padding: '0 16px 16px' }}>
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 13 }}>
+            <span
+              className="mono"
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--text-3)',
+              }}
+            >
+              복습이 필요한 단어 · {reviewWords.length}
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 12 }}>
+              {reviewWords.length === 0 ? (
                 <div
-                  key={a.wordId}
-                  className="flex justify-between items-center py-2 px-3 bg-red-600/8 dark:bg-red-500/10 rounded-lg"
+                  style={{
+                    fontSize: 13.5,
+                    color: 'var(--green)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 7,
+                  }}
                 >
-                  <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
-                    {a.term}
-                  </span>
-                  <span className="text-[12px] text-slate-500 dark:text-slate-400">
-                    {a.definition}
-                  </span>
+                  <BsCheckLg size={15} /> 모든 단어를 맞혔어요!
                 </div>
-              ))}
-            </>
-          )}
+              ) : (
+                reviewWords.map((w) => (
+                  <div
+                    key={w.wordId}
+                    style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}
+                  >
+                    <span
+                      className="mono"
+                      style={{
+                        fontSize: 13.5,
+                        fontWeight: 600,
+                        color: 'var(--brand)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {w.term}
+                    </span>
+                    <span
+                      style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.45 }}
+                    >
+                      {w.definition}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       )}
-    </li>
+    </div>
   )
 }
 
@@ -117,66 +205,264 @@ export default function HomePage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-950">
-      <header className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <span className="text-lg font-extrabold text-violet-600 dark:text-violet-400 tracking-[-0.5px]">
-          {APP_NAME}
-        </span>
-        <button
-          className="bg-transparent border border-slate-200 dark:border-slate-700 rounded-lg py-1.5 px-3 text-[13px] text-slate-500 dark:text-slate-400 transition-[border-color,color] hover:border-red-600 hover:text-red-600 dark:hover:text-red-400"
-          onClick={handleLogout}
-        >
-          로그아웃
-        </button>
-      </header>
-
-      <main className="flex-1 flex flex-col gap-4 py-6 px-5 max-w-135 w-full mx-auto box-border">
-        <div className="mb-1">
-          <h1 className="text-[26px] font-bold text-slate-800 dark:text-slate-100">안녕하세요 👋</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{user?.email}</p>
-        </div>
-
-        <div className="bg-violet-600 rounded-xl py-6 px-5 flex items-center justify-between gap-4 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-bold text-white">오늘의 학습</h2>
-            <p className="text-[13px] text-white/80">10개의 단어가 준비되어 있어요</p>
-          </div>
+    <div className="screen-scroll fade-in" style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Sticky header */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '16px 22px',
+          background: 'color-mix(in oklab, var(--bg) 80%, transparent)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <Logo size={18} />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <ThemeToggle />
           <button
-            className="shrink-0 py-3 px-5 bg-white text-violet-600 border-none rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
-            onClick={() => navigate('/study')}
+            onClick={handleLogout}
+            aria-label="로그아웃"
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 11,
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--text-2)',
+              display: 'grid',
+              placeItems: 'center',
+              cursor: 'pointer',
+              transition: 'color 0.18s, border-color 0.18s',
+            }}
           >
-            학습 시작
+            <BsBoxArrowRight size={17} />
           </button>
         </div>
+      </header>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-          <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">
-            학습 내역
-          </h2>
+      <div style={{ padding: '24px 22px 36px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {/* Greeting */}
+        <div className="fade-up">
+          <h1
+            style={{
+              margin: 0,
+              fontSize: 25,
+              fontWeight: 800,
+              letterSpacing: '-0.03em',
+              color: 'var(--text)',
+            }}
+          >
+            안녕하세요 👋
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            <span className="mono" style={{ fontSize: 13, color: 'var(--text-2)' }}>
+              {user?.email}
+            </span>
+            {user?.displayName ? null : (
+              <span
+                className="mono"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: 'var(--brand)',
+                  background: 'var(--brand-tint)',
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                }}
+              >
+                개발자
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Today card */}
+        <div className="fade-up" style={{ animationDelay: '0.05s', marginTop: 20 }}>
+          <div
+            style={{
+              position: 'relative',
+              overflow: 'hidden',
+              borderRadius: 'var(--card-radius)',
+              background: 'linear-gradient(145deg, var(--brand), color-mix(in oklab, var(--brand) 72%, #000))',
+              color: '#fff',
+              padding: 22,
+              boxShadow: '0 16px 38px -16px color-mix(in oklab, var(--brand) 70%, transparent)',
+            }}
+          >
+            {/* Background grid */}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                opacity: 0.5,
+                backgroundImage:
+                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.13) 1px, transparent 0)',
+                backgroundSize: '16px 16px',
+                pointerEvents: 'none',
+              }}
+            />
+            <div style={{ position: 'relative' }}>
+              <span
+                className="mono"
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  opacity: 0.85,
+                }}
+              >
+                오늘의 학습
+              </span>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 10,
+                  marginTop: 14,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 52,
+                    fontWeight: 850,
+                    lineHeight: 1,
+                    letterSpacing: '-0.04em',
+                  }}
+                >
+                  10
+                </span>
+                <span style={{ fontSize: 18, fontWeight: 650, opacity: 0.92 }}>
+                  개의 단어가
+                  <br />
+                  준비되어 있어요
+                </span>
+              </div>
+              <p
+                style={{
+                  margin: '16px 0 0',
+                  fontSize: 13.5,
+                  lineHeight: 1.5,
+                  opacity: 0.85,
+                }}
+              >
+                오늘 복습할 단어를 준비했어요. 약 4분이면 끝나요.
+              </p>
+              <button
+                onClick={() => navigate('/study')}
+                style={{
+                  marginTop: 20,
+                  width: '100%',
+                  border: 'none',
+                  borderRadius: 13,
+                  padding: '15px',
+                  background: '#fff',
+                  color: 'var(--brand-ink)',
+                  fontSize: 16,
+                  fontWeight: 750,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  cursor: 'pointer',
+                  transition: 'transform 0.14s ease',
+                  boxShadow: '0 6px 18px -8px rgba(0,0,0,0.4)',
+                }}
+                onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.98)')}
+                onMouseUp={(e) => (e.currentTarget.style.transform = 'none')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'none')}
+              >
+                학습 시작 <BsArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Session history */}
+        <div className="fade-up" style={{ animationDelay: '0.1s', marginTop: 30 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 14,
+            }}
+          >
+            <span
+              className="mono"
+              style={{
+                fontSize: 11.5,
+                fontWeight: 600,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'var(--text-3)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              <BsLayers size={13} /> 학습 내역
+            </span>
+            <span className="mono" style={{ fontSize: 11.5, color: 'var(--text-3)' }}>
+              {sessions.length} sessions
+            </span>
+          </div>
 
           {historyLoading ? (
-            <p className="text-[13px] text-slate-400 dark:text-slate-500">불러오는 중...</p>
+            <p style={{ fontSize: 13.5, color: 'var(--text-3)', padding: '8px 0' }}>불러오는 중...</p>
           ) : sessions.length === 0 ? (
-            <p className="text-[13px] text-slate-400 dark:text-slate-500">
+            <p style={{ fontSize: 13.5, color: 'var(--text-3)', lineHeight: 1.5 }}>
               아직 학습 기록이 없어요. 첫 학습을 시작해보세요!
             </p>
           ) : (
-            <ul className="list-none m-0 p-0 flex flex-col gap-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {sessions.map((s) => (
                 <SessionRow key={s.id} session={s} />
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
-          <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">💡 학습 팁</p>
-          <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed">
-            플래시카드 앞면을 보고 뜻을 떠올린 후, 카드를 뒤집어 확인하세요.
-            솔직하게 "알고있음 / 모름"을 선택할수록 복습 효과가 높아져요.
-          </p>
+        {/* Tip card */}
+        <div className="fade-up" style={{ animationDelay: '0.15s', marginTop: 26 }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 13,
+              alignItems: 'flex-start',
+              background: 'var(--surface-2)',
+              border: '1px dashed var(--border-strong)',
+              borderRadius: 16,
+              padding: '15px 16px',
+            }}
+          >
+            <span style={{ color: 'var(--amber)', flexShrink: 0, marginTop: 1 }}>
+              <BsLightning size={18} />
+            </span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>학습 팁</div>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  lineHeight: 1.5,
+                  color: 'var(--text-2)',
+                  marginTop: 3,
+                }}
+              >
+                뜻이 떠오르지 않아도 괜찮아요.{' '}
+                <strong style={{ color: 'var(--text)' }}>"모름"</strong>을 솔직하게 누를수록
+                SM-2가 복습 주기를 더 정확하게 맞춰줘요.
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
