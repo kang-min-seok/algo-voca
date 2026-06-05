@@ -40,7 +40,9 @@ def embed(client: genai.Client, text: str) -> list[float]:
         contents=text,
         config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY"),
     )
-    return response.embedding.values
+    if not response.embeddings:
+        raise RuntimeError("Gemini embedding response was empty")
+    return response.embeddings[0].values
 
 
 def format_vector(values: list[float]) -> str:

@@ -61,8 +61,9 @@ def embed_words(words: list[str]) -> list[dict]:
             contents=batch,
             config=types.EmbedContentConfig(task_type="RETRIEVAL_DOCUMENT"),
         )
-        # 배치 응답: response.embeddings (list), 단일 응답: response.embedding
-        embeddings = response.embeddings if len(batch) > 1 else [response.embedding]
+        embeddings = response.embeddings
+        if not embeddings:
+            raise RuntimeError("Gemini embedding response was empty")
         for word, emb in zip(batch, embeddings):
             results.append({"word": word, "embedding": emb.values})
 
