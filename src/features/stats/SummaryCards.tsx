@@ -10,31 +10,29 @@ interface CardProps {
 function Card({ label, value, sub, accent }: CardProps) {
   return (
     <div
-      className={`flex flex-col gap-1 p-4 rounded-xl border ${
+      className="flex flex-col gap-1 p-4 rounded-xl"
+      style={
         accent
-          ? 'bg-violet-600 border-violet-600'
-          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
-      }`}
+          ? { background: 'var(--brand)', border: '1px solid var(--brand)' }
+          : { background: 'var(--surface)', border: '1px solid var(--border)' }
+      }
     >
       <span
-        className={`text-[12px] font-medium ${
-          accent ? 'text-white/70' : 'text-slate-500 dark:text-slate-400'
-        }`}
+        className="text-[12px] font-medium"
+        style={{ color: accent ? 'rgba(255,255,255,0.7)' : 'var(--text-2)' }}
       >
         {label}
       </span>
       <span
-        className={`text-2xl font-bold ${
-          accent ? 'text-white' : 'text-slate-800 dark:text-slate-100'
-        }`}
+        className="text-2xl font-bold"
+        style={{ color: accent ? '#ffffff' : 'var(--text)' }}
       >
         {value}
       </span>
       {sub && (
         <span
-          className={`text-[11px] ${
-            accent ? 'text-white/60' : 'text-slate-400 dark:text-slate-500'
-          }`}
+          className="text-[11px]"
+          style={{ color: accent ? 'rgba(255,255,255,0.6)' : 'var(--text-3)' }}
         >
           {sub}
         </span>
