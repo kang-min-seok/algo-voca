@@ -24,13 +24,15 @@ export function scoreWords(
 ): ScoredWord[] {
   const eligible = getEligibleWords(words, wordRecords)
 
-  return eligible.map(({ word }) => {
+  return eligible.map(({ word, record }) => {
     const importance = word.importanceByRole[jobRole] / 10
     const relevance = pineconeScores.get(word.id) ?? 0
+    // 미학습: 0, 정답 위주(errorScore→0): 최대 -1, 오답 위주(errorScore→1): 최대 +1
+    const errorContribution = record ? record.errorScore * 2 - 1 : 0
 
     return {
       word,
-      score: 0.5 * importance + 0.5 * relevance,
+      score: 0.4 * importance + 0.4 * relevance + 0.2 * errorContribution,
     }
   })
 }
