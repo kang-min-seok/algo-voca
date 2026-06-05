@@ -149,6 +149,17 @@ export default function HomePage() {
           </button>
         </div>
 
+        <button
+          className="w-full flex items-center justify-between px-5 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-left transition-colors hover:border-violet-400 dark:hover:border-violet-500"
+          onClick={() => navigate('/stats')}
+        >
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">학습 통계</span>
+            <span className="text-[12px] text-slate-400 dark:text-slate-500">학습 현황과 취약 단어를 확인하세요</span>
+          </div>
+          <span className="text-slate-400 dark:text-slate-500 text-sm">→</span>
+        </button>
+
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
           <h2 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-4">
             학습 내역

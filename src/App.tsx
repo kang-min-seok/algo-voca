@@ -8,6 +8,7 @@ import SignupPage from '@/features/auth/SignupPage'
 import StudyPage from '@/features/flashcard/StudyPage'
 import ResultPage from '@/features/flashcard/ResultPage'
 import OnboardingPage from '@/features/auth/OnboardingPage'
+import StatsPage from '@/features/stats/StatsPage'
 
 export default function App() {
   return (
@@ -46,6 +47,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ResultPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/stats"
+            element={
+              <ProtectedRoute>
+                <StatsPage />
               </ProtectedRoute>
             }
           />
